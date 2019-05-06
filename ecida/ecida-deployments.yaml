@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: generator
+  labels:
+    app: generator
+spec:
+  ports:
+  - port: 1234 
+    name: http
+  selector:
+    app: generator
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -17,7 +30,7 @@ spec:
         image: ecida/1_generator
         env:
         - name: SINK
-          value: "router"
+          value: "http://router"
         resources:
           requests:
             cpu: "100m"
@@ -36,6 +49,67 @@ spec:
     name: http
   selector:
     app: router
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: output
+  labels:
+    app: output
+spec:
+  ports:
+  - port: 3001
+    name: http
+  selector:
+    app: output
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: output-json
+  labels:
+    version: json
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: output
+        version: json
+    spec:
+      containers:
+      - name: outputjson
+        image: ecida/3_outputjson
+        resources:
+          requests:
+            cpu: "100m"
+        imagePullPolicy: IfNotPresent #Always
+        ports:
+        - containerPort: 3001
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: output-csv
+  labels:
+    version: csv
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: output
+        version: csv
+    spec:
+      containers:
+      - name: outputcsv
+        image: ecida/3_outputcsv
+        resources:
+          requests:
+            cpu: "100m"
+        imagePullPolicy: IfNotPresent #Always
+        ports:
+        - containerPort: 3001
 ---
 apiVersion: v1
 kind: Service
@@ -67,6 +141,9 @@ spec:
       containers:
       - name: transformer
         image: ecida/2_transformer
+        env:
+        - name: SINK
+          value: "http://router"
         resources:
           requests:
             cpu: "100m"

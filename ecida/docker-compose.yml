@@ -4,7 +4,15 @@ services:
     build: ./1_generator
     image: ecida/1_generator
     environment:
-      - "SINK=2_transformer:3000"
+      - "SINK=http://2_transformer:3000"
   2_transformer:
     build: ./2_transformer
     image: ecida/2_transformer
+    environment:
+      - "SINK=http://3_outputjson:3001"
+  #3_outputcsv:
+    #build: ./3_outputcsv
+    #image: ecida/3_outputcsv
+  3_outputjson:
+    build: ./3_outputjson
+    image: ecida/3_outputjson
