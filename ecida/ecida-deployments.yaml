@@ -1,0 +1,75 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: generator-v1
+  labels:
+    version: v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: generator
+        version: v1
+    spec:
+      containers:
+      - name: generator
+        image: ecida/1_generator
+        env:
+        - name: SINK
+          value: "router"
+        resources:
+          requests:
+            cpu: "100m"
+        imagePullPolicy: IfNotPresent #Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: router
+  labels:
+    app: router
+spec:
+  ports:
+  - port: 80
+    name: http
+  selector:
+    app: router
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transformer
+  labels:
+    app: transformer
+spec:
+  ports:
+  - port: 3000
+    name: http
+  selector:
+    app: transformer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: transformer-v1
+  labels:
+    version: v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: transformer
+        version: v1
+    spec:
+      containers:
+      - name: transformer
+        image: ecida/2_transformer
+        resources:
+          requests:
+            cpu: "100m"
+        imagePullPolicy: IfNotPresent #Always
+        ports:
+        - containerPort: 3000

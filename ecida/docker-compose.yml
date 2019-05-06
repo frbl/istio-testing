@@ -1,0 +1,10 @@
+version: "3"
+services:
+  1_generator:
+    build: ./1_generator
+    image: ecida/1_generator
+    environment:
+      - "SINK=2_transformer:3000"
+  2_transformer:
+    build: ./2_transformer
+    image: ecida/2_transformer
